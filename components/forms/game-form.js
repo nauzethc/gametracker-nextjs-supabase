@@ -1,4 +1,4 @@
-import { useForm } from '../../hooks/form'
+import { useForm } from '../../hooks/forms'
 import { GAMEPLAY_OPTIONS, STATUS_OPTIONS } from '../../config/forms'
 import RatingInput from '../common/rating-input'
 

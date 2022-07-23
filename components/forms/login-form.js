@@ -1,4 +1,4 @@
-import { useForm } from '../../hooks/form'
+import { useForm } from '../../hooks/forms'
 
 const defaults = {
   email: ''
