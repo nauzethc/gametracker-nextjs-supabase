@@ -1,4 +1,4 @@
-import { useForm } from '../../../gametracker-nextjs/hooks/forms'
+import { useForm } from '../../hooks/forms'
 import { GAMEPLAY_OPTIONS, STATUS_OPTIONS } from '../../config/forms'
 import { getGameplayType, getStatus } from '../../utils/games'
 
