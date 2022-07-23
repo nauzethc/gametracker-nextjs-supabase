@@ -1,4 +1,4 @@
-import { sanitizeGame } from '../utils/igdb'
+import { sanitizeGameRetrieve, sanitizeGameQuery } from '../utils/igdb'
 
 const AUTH_BASE_URL = process.env.TWITCH_AUTH_BASE_URL
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID
@@ -48,6 +48,7 @@ async function getToken () {
 
 export async function findGamesByName (query) {
   const token = await getToken()
+  const { limit, offset, search } = sanitizeGameQuery(query)
   const response = await fetch(`${IGDB_BASE_URL}/games`, {
     method: 'POST',
     headers: {
@@ -55,12 +56,17 @@ export async function findGamesByName (query) {
       Authorization: `Bearer ${token.access_token}`
     },
     body: `
-      search "${query}";
+      search "${search}";
       fields ${FIELDS.join(',')};
+      limit ${limit};
+      offset ${offset};
     `
   })
   const games = await response.json()
-  return games.map(sanitizeGame)
+  return {
+    count: Number(response.headers.get('x-count', 0)),
+    data: games.map(sanitizeGameRetrieve)
+  }
 }
 
 export async function findGameById (id) {
@@ -77,5 +83,5 @@ export async function findGameById (id) {
     `
   })
   const games = await response.json()
-  return games.map(sanitizeGame).pop()
+  return games.map(sanitizeGameRetrieve).pop()
 }

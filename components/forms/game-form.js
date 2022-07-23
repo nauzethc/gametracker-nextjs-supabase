@@ -13,7 +13,9 @@ const defaults = {
   platform_logo: '',
   platform_abbreviation: '',
   status: 'pending',
-  gameplay_type: 'main'
+  gameplay_type: 'main',
+  fixed: false,
+  favorite: false
 }
 
 export default function GameForm ({

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 
 export const AuthContext = React.createContext()
 
 export function AuthProvider ({ children }) {
+  const router = useRouter()
   const [user, setUser] = useState()
   const [loading, setLoading] = useState(true)
 
@@ -22,6 +24,7 @@ export function AuthProvider ({ children }) {
           credentials: 'same-origin',
           body: JSON.stringify({ event, session })
         })
+        if (!user) router.push('/login')
       }
     )
     return () => (listener && listener.unsubscribe())

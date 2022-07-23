@@ -5,7 +5,7 @@ export default async function handler (req, res) {
     res.status(400).json({ message: 'Invalid request: "q" param is mandatory' })
   } else {
     try {
-      const games = await findGamesByName(req.query.q)
+      const games = await findGamesByName(req.query)
       res.status(200).json(games)
     } catch (error) {
       res.status(500).send(error)

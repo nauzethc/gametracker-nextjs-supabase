@@ -1,3 +1,5 @@
+import { DEFAULT_PAGE_SIZE } from '../config'
+
 const IGDB_IMG_BASE_URL = 'https://images.igdb.com/igdb/image/upload'
 
 function toDateISO (epoch = 0) {
@@ -77,7 +79,7 @@ export function getImageURL (hashId, size = 'screenshot_big') {
   return `${IGDB_IMG_BASE_URL}/t_${size}/${hashId}.jpg`
 }
 
-export function sanitizeGame (igdbData = {}) {
+export function sanitizeGameRetrieve (igdbData = {}) {
   return {
     name: igdbData.name,
     slug: igdbData.slug,
@@ -93,4 +95,14 @@ export function sanitizeGame (igdbData = {}) {
     genres: getGenres(igdbData.genres),
     platforms: getPlatforms(igdbData.platforms)
   }
+}
+
+export function sanitizeGameQuery (query = {}) {
+  const limit = Number(query.page_size || DEFAULT_PAGE_SIZE)
+  const numPage = Number(query.page)
+  const offset = (numPage - 1 > 0) ? (numPage - 1) * limit : 0
+  const sort = query.order_by === 'name'
+    ? 'name asc'
+    : 'first_release_date desc'
+  return { search: query.q, limit, offset, sort }
 }

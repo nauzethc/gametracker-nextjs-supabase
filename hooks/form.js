@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react'
 
 function getFormData (defaults = {}, initialData = {}) {
   return Object.fromEntries(
-    Object.entries(defaults).map(([field, value]) => {
-      if (initialData[field] !== undefined || initialData[field] === null) {
-        return [field, initialData[field]]
-      } else {
-        return [field, value]
-      }
-    })
+    Object.entries(defaults).map(([field, value]) =>
+      (initialData[field] !== undefined && initialData[field] !== null)
+        ? [field, initialData[field]]
+        : [field, value]
+    )
   )
 }
 

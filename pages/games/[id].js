@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 
 import AppMenu from '../../components/common/app-menu'
 import Modal from '../../components/common/modal'
+import PinnedIcon from '../../components/common/pinned-icon'
 import GameForm from '../../components/forms/game-form'
 import Error from '../../components/common/error'
 import GameHeader from '../../components/games/game-header'
@@ -15,6 +16,10 @@ export default function GameDetail ({ id, data, error }) {
   const [showDeleteModal, setDeleteModal] = useState(false)
   const { state, update, remove } = useGames({ data, error })
   const router = useRouter()
+
+  const handleFixed = async () => {
+    await update(id, { fixed: !state.data.fixed })
+  }
 
   const handleEdit = async (formData) => {
     await update(id, formData)
@@ -30,18 +35,24 @@ export default function GameDetail ({ id, data, error }) {
     <div id="game-detail" className="grid">
       <Error error={state.error && state.error.message} />
       {state.data
-        ? <div className="grid px-4 py-3 gap-4">
-            <GameHeader data={state.data} />
-            <GameTracking data={state.data} />
+        ? <div className="grid gap-1">
+            <GameHeader className="px-4 py-6 bg-base-100" data={state.data} />
+            <GameTracking className="bg-base-100" data={state.data} />
           </div>
         : null
       }
       <AppMenu>
+        {state.data && state.data.status === 'pending'
+          ? <button onClick={handleFixed} className="btn btn-square btn-ghost">
+              <PinnedIcon value={state.data.fixed} />
+            </button>
+          : null
+        }
         <div className="dropdown dropdown-end">
           <label tabIndex="0" className="btn btn-square btn-ghost">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
           </label>
-          <ul tabIndex="0" className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+          <ul tabIndex="0" className="dropdown-content menu p-2 shadow rounded-box w-52 bg-base-200 text-base-content">
             <li>
               <a href="#edit" onClick={() => setEditModal(true)}>
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>

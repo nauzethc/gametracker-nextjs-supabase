@@ -1,3 +1,9 @@
+import { DEFAULT_PAGE_SIZE } from '../config'
+import { STATUS_OPTIONS, GAMEPLAY_OPTIONS } from '../config/forms'
+
+const GAMEPLAY_VALID = GAMEPLAY_OPTIONS.map(({ value }) => value)
+const STATUS_VALID = STATUS_OPTIONS.map(({ value }) => value)
+
 export function clamp (min, max, value) {
   if (value < min) return min
   if (value > max) return max
@@ -43,6 +49,10 @@ export function getType (type) {
 
 export function getStatus (status = 'unknown') {
   return capitalize(status)
+}
+
+export function getGameplayType (gameplay_type = 'unknown') {
+  return capitalize(gameplay_type)
 }
 
 export function getStatusDetail ({ status, finished_on, started_on, updated_at }) {
@@ -96,12 +106,10 @@ const REDUCERS = {
     return value ? new Date(value) : null
   },
   status (value = 'pending') {
-    const valid = ['pending', 'finished', 'abandoned']
-    return valid.includes(value) ? value : 'pending'
+    return STATUS_VALID.includes(value) ? value : 'pending'
   },
   gameplay_type (value = 'main') {
-    const valid = ['main', 'extendend', 'completionist', 'speedrun']
-    return valid.includes(value) ? value : 'main'
+    return GAMEPLAY_VALID.includes(value) ? value : 'main'
   },
   total_hours (value = 0) {
     return Number(value)
@@ -114,6 +122,9 @@ const REDUCERS = {
   },
   rating (value = 0) {
     return Number(value)
+  },
+  fixed (value) {
+    return Boolean(value)
   }
 }
 
@@ -167,9 +178,10 @@ export function sanitizeGameUpdate (data = {}) {
     'platform_logo',
     'status',
     'gameplay_type',
-    'updated_at'
+    'updated_at',
+    'fixed'
   ]
-  return Object.fromEntries(
+  const output = Object.fromEntries(
     Object.entries(data)
       .filter(([field]) => fields.includes(field))
       .map(([field, value]) => [
@@ -179,4 +191,40 @@ export function sanitizeGameUpdate (data = {}) {
           : value
       ])
   )
+  return output
+}
+
+export function sanitizeGameQuery (query = {}) {
+  const pageSize = Number(query.page_size || DEFAULT_PAGE_SIZE)
+  const sanitized = {
+    match: {},
+    order_by: ['started_on', { ascending: false }],
+    range: [0, pageSize - 1]
+  }
+
+  if (GAMEPLAY_VALID.includes(query.gameplay_type)) {
+    sanitized.match.gameplay_type = query.gameplay_type
+  }
+
+  if (STATUS_VALID.includes(query.status)) {
+    sanitized.match.status = query.status
+  }
+
+  const [orderBy, sorting] = (query.order_by || '').split(' ')
+  if (['started_on', 'finished_on', 'name', 'updated_at'].includes(orderBy)) {
+    sanitized.order_by = [orderBy, { ascending: sorting === 'asc' }]
+  }
+
+  if (query.q && typeof query.q === 'string') {
+    sanitized.textSearch = ['name', `'${query.q}'`]
+  }
+
+  if (query.page) {
+    const num = Number(query.page)
+    const numPage = (num - 1 > 0) ? num - 1 : 0
+    const start = numPage * pageSize
+    const end = start + pageSize - 1
+    sanitized.range = [start, end]
+  }
+  return sanitized
 }

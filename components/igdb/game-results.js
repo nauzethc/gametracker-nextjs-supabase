@@ -20,7 +20,7 @@ function getGenres (genres = []) {
 
 function GameItem ({ data, onTrack }) {
   return (
-    <div className="game-item flex gap-4 bg-base-100 p-2 rounded-xl">
+    <div className="game-item flex gap-4 bg-base-100 p-4">
       <Cover className="w-24 flex-shrink-0 rounded-lg bg-base-100 text-base-content/30" src={data.cover} alt={data.name} />
       <div className="flex flex-col gap-2 w-full">
         <h2 className="text-lg font-extrabold">
@@ -51,7 +51,7 @@ export default function GameResults ({ results = [], onTrack }) {
     if (typeof onTrack === 'function') onTrack(game)
   }
   return (
-    <div className="game-results grid md:grid-cols-2 py-4 px-2 gap-y-4 gap-x-6">
+    <div className="game-results grid gap-1 md:grid-cols-2">
       {Array.isArray(results)
         ? results.map(game => <GameItem key={game.igdb_id} data={game} onTrack={handleTrack} />)
         : null

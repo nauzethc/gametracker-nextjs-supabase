@@ -1,22 +1,23 @@
+import { capitalize, getStatusDetail } from '../../utils/games'
+
 import Cover from '../common/cover'
 import StatusIcon from '../common/status-icon'
 import GameplayIcon from '../common/gameplay-icon'
 import Link from 'next/link'
-
-import { capitalize, getStatusDetail } from '../../utils/games'
 import AchievementsBar from '../common/achievements-bar'
+import PinnedIcon from '../common/pinned-icon'
 
 function GameItem ({ data }) {
   return (
-    <div className="game-item flex gap-6 bg-base-100 px-4 py-3 rounded-xl">
+    <div className="game-item flex gap-6 p-4 bg-base-100">
       <Cover
         className="w-24 flex-shrink-0 flex-grow-0 rounded-lg bg-base-100 text-base-content/30"
         src={data.cover}
         alt={data.name} />
       <div className="grid gap-y-2 gap-x-6 w-full sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
-        <h2 className="text-lg font-extrabold sm:col-span-2 md:col-span-1 lg:col-span-2">
+        <h2 className="text-lg leading-6 font-extrabold gap-y-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
           <Link href={`/games/${data.id}`}>
-            <a>{data.name}</a>
+            <a>{data.fixed ? <PinnedIcon className="w-5 h-5 mr-2" value={true} /> : null}{data.name}</a>
           </Link>
         </h2>
         <div className="flex items-start gap-2 sm:col-span-2 md:col-span-1 lg:col-span-2">
@@ -46,8 +47,11 @@ function GameItem ({ data }) {
 
 export default function GameList ({ data = [] }) {
   return (
-    <div className="game-list grid gap-2 px-4 py-3 md:grid-cols-2">
-      {data.map(game => <GameItem key={game.id} data={game} />)}
+    <div className="game-list grid gap-1 md:grid-cols-2">
+      {Array.isArray(data)
+        ? data.map(game => <GameItem key={game.id} data={game} />)
+        : null
+      }
     </div>
   )
 }

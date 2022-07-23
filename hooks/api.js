@@ -1,11 +1,11 @@
 import { useReducer } from 'react'
 
-function reducer (state, { type, data, error }) {
+function reducer (state, { type, data, error, count }) {
   switch (type) {
     case 'request':
       return { ...state, pending: true }
     case 'success':
-      return { ...state, pending: false, error: null, data }
+      return { ...state, pending: false, error: null, data, count }
     case 'error':
       return { ...state, pending: false, error }
     default:
@@ -24,15 +24,16 @@ export function useAPI (endpoint) {
   const [state, dispatch] = useReducer(reducer, {
     pending: false,
     error: null,
-    data: null
+    data: null,
+    count: 0
   })
 
   async function workflow (promise) {
     dispatch({ type: 'request' })
     try {
       const response = await promise
-      const data = await response.json()
-      dispatch({ type: 'success', data })
+      const { count = 0, data } = await response.json()
+      dispatch({ type: 'success', data, count })
       return data
     } catch (error) {
       dispatch({ type: 'error', error })

@@ -1,20 +1,22 @@
 import { useReducer } from 'react'
 import { useUser } from './auth'
 import { supabase } from '../lib/supabase'
-import { sanitizeGameCreate, sanitizeGameUpdate } from '../utils/games'
+import { sanitizeGameCreate, sanitizeGameQuery, sanitizeGameUpdate } from '../utils/games'
+import { getUser, supabaseServerClient } from '@supabase/auth-helpers-nextjs'
 
 const DEFAULT_STATE = {
   error: null,
   data: null,
+  count: 0,
   pending: false
 }
 
-function reducer (state, { type, data, error }) {
+function reducer (state, { type, data, error, count }) {
   switch (type) {
     case 'request':
       return { ...state, pending: true }
     case 'success':
-      return { ...state, pending: false, error: null, data }
+      return { ...state, pending: false, error: null, data, count }
     case 'error':
       return { ...state, pending: false, error }
     default:
@@ -41,7 +43,7 @@ export function useGames (initialState = {}) {
         .insert(sanitized_data)
 
       if (error) throw error
-      dispatch({ type: 'success', data })
+      dispatch({ type: 'success', data, count: 1 })
     } catch (error) {
       dispatch({ type: 'error', error })
     }
@@ -60,7 +62,7 @@ export function useGames (initialState = {}) {
         .eq('id', gameId)
 
       if (error) throw error
-      dispatch({ type: 'success', data: data.pop() })
+      dispatch({ type: 'success', data: data.pop(), count: 1 })
     } catch (error) {
       dispatch({ type: 'error', error })
     }
@@ -75,7 +77,7 @@ export function useGames (initialState = {}) {
         .eq('id', gameId)
 
       if (error) throw error
-      dispatch({ type: 'success', data: data.pop() })
+      dispatch({ type: 'success', data: data.pop(), count: 1 })
     } catch (error) {
       dispatch({ type: 'error', error })
     }
@@ -91,7 +93,36 @@ export function useGames (initialState = {}) {
         .limit(1)
         .single()
       if (error) throw error
-      dispatch({ type: 'success', data })
+      dispatch({ type: 'success', data, count: 1 })
+    } catch (error) {
+      dispatch({ type: 'error', error })
+    }
+  }
+
+  async function find (query = {}) {
+    dispatch({ type: 'request' })
+    try {
+      const { match, textSearch, order_by, range } = sanitizeGameQuery(query)
+      const { error, data, count } = await (textSearch
+        ? supabase
+          .from('games')
+          .select('*', { count: 'estimated' })
+          .textSearch(...textSearch)
+          .eq('user_id', user.id)
+          .match(match)
+          .order(...order_by)
+          .range(...range)
+        : supabase
+          .from('games')
+          .select('*', { count: 'estimated' })
+          .eq('user_id', user.id)
+          .match(match)
+          .order(...order_by)
+          .range(...range)
+      )
+
+      if (error) throw error
+      dispatch({ type: 'success', data, count })
     } catch (error) {
       dispatch({ type: 'error', error })
     }
@@ -104,6 +135,40 @@ export function useGames (initialState = {}) {
     create,
     retrieve,
     update,
-    remove
+    remove,
+    find
+  }
+}
+
+export function withGames (context) {
+  let session
+
+  async function find (query = {}) {
+    if (!session) session = await getUser(context)
+    const { match, textSearch, order_by, range } = sanitizeGameQuery(query)
+    try {
+      return textSearch
+        ? supabaseServerClient(context)
+          .from('games')
+          .select('*', { count: 'estimated' })
+          .textSearch(...textSearch)
+          .eq('user_id', session.user.id)
+          .match(match)
+          .order(...order_by)
+          .range(...range)
+        : supabaseServerClient(context)
+          .from('games')
+          .select('*', { count: 'estimated' })
+          .eq('user_id', session.user.id)
+          .match(match)
+          .order(...order_by)
+          .range(...range)
+    } catch (error) {
+      return { error: error.message, count: 0, data: null }
+    }
+  }
+
+  return {
+    find
   }
 }

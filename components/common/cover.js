@@ -4,7 +4,7 @@ const DEFAULT_SIZE = [264, 374]
 
 export default function Cover ({ src, alt = 'Cover', className = '' }) {
   return (
-    <figure className={`overflow-hidden !block ${className}`} style={{
+    <figure className={`overflow-hidden !block bg-base-300 ${className}`} style={{
       aspectRatio: DEFAULT_SIZE[0] / DEFAULT_SIZE[1],
       height: 'fit-content'
     }}>

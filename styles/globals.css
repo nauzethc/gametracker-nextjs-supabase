@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+a:not(.btn) {
+  @apply transition-colors;
+}
+
+a:not(.btn):hover {
+  @apply text-primary;
+}
+
+.collapsable-form {
+  @apply grid gap-2;
+}
+
+.collapsable-form .form-control-preview {
+  @apply hidden;
+}
+
+.collapsable-form.collapsed {
+  @apply flex items-center gap-2;
+}
+
+.collapsable-form.collapsed .form-control {
+  @apply hidden;
+}
+
+.collapsable-form.collapsed .form-control-preview {
+  @apply block;
+}
